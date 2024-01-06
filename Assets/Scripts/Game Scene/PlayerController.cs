@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float initialMoveSpeed = 90f;
+    public GameController gameController;
     private Rigidbody2D rb;
 
     void Start()
@@ -26,10 +27,9 @@ public class PlayerController : MonoBehaviour
 
     private void AddMovement()
     {
-        // Inizia il gioco solo se non è già iniziato
-        if (!GameController.Instance.IsGameStarted())
+        if (gameController != null && !gameController.IsGameStarted())
         {
-            GameController.Instance.StartGame();
+            gameController.StartGame();
         }
 
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);

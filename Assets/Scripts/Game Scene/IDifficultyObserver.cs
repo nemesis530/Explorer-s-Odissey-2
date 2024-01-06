@@ -1,5 +1,5 @@
+// IDifficultyObserver.cs
 public interface IDifficultyObserver
 {
-    // Metodo chiamato quando la difficoltà cambia
-    void OnDifficultyChanged(int level);
+    void OnDifficultyChanged(float newSpawnRate, float newObstacleSpeed, int newLevel);
 }

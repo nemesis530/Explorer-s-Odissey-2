@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 5904359363015856270}
   - component: {fileID: 2670929035154177368}
   - component: {fileID: 4249766156591030204}
-  - component: {fileID: 4485739043130737952}
   - component: {fileID: 1757406604136515553}
   m_Layer: 0
   m_Name: Ostacolo1
@@ -261,18 +260,6 @@ EdgeCollider2D:
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0
   m_UseAdjacentEndPoint: 0
---- !u!114 &4485739043130737952
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3986108355950730078}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d82526dff6f3a0488d03a77929461b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1757406604136515553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -285,4 +272,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5d40bc919bd77d4aac91c0b7a0d9ec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 100
+  obstaclePrefabs:
+  - {fileID: 3986108355950730078}
+  baseSpeed: 100

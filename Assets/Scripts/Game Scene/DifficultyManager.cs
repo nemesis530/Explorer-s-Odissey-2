@@ -1,39 +1,69 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DifficultyManager : MonoBehaviour
 {
-    public delegate void SpeedUpdateDelegate(float newSpeed);
-    public event SpeedUpdateDelegate OnSpeedUpdate;
+    public static DifficultyManager Instance { get; private set; }
 
-    public delegate void LevelChangeDelegate(int newLevel);
-    public event LevelChangeDelegate OnLevelChanged;
-
-    public float initialSpawnRate = 10.0f;
-    public float spawnRateDecrement = 1.5f;
-    public float minimumSpawnRate = 2.5f;
-    public float maximumObstacleSpeed = 350f;
-    public float obstacleSpeedIncrement = 50f;
+    private readonly float initialSpawnRate = 10.0f;
+    private readonly float spawnRateDecrement = 1.5f;
+    private readonly float minimumSpawnRate = 2.5f;
+    private readonly float maximumObstacleSpeed = 350f;
+    private readonly float obstacleSpeedIncrement = 50f;
+    private readonly int scorePerLevel = 10;
 
     private int currentLevel = 1;
-    private int scorePerLevel = 10;
-    private float currentObstacleSpeed; // Velocità corrente degli ostacoli
-    private float currentSpawnRate; // Tasso di generazione corrente degli ostacoli
+    private float currentSpawnRate;
+    public float CurrentObstacleSpeed { get; private set; }
+    private List<IDifficultyObserver> observers = new List<IDifficultyObserver>();
 
-    void Start()
+    private void Awake()
     {
-        currentSpawnRate = initialSpawnRate; // Imposta il tasso di generazione iniziale al valore di partenza
-        currentObstacleSpeed = ObstacleType1.GetBaseSpeed(); // Imposta la velocità iniziale degli ostacoli
-        Debug.Log($"DifficultyManager started. Initial spawn rate: {currentSpawnRate}, Initial obstacle speed: {currentObstacleSpeed}");
+        if (Instance == null)
+        {
+            Instance = this;
+            Debug.Log("DifficultyManager: Singleton instance assigned.");
+        }
+        else if (Instance != this)
+        {
+            Debug.LogWarning("DifficultyManager: More than one instance detected, destroying duplicate.");
+            Destroy(gameObject);
+            return;
+        }
     }
 
-    public void StartDifficulty()
+    private void Start()
+    {
+        ResetDifficulty();
+        Debug.Log("DifficultyManager: Difficulty reset at start.");
+    }
+
+    public void RegisterObserver(IDifficultyObserver observer)
+    {
+        if (!observers.Contains(observer))
+        {
+            observers.Add(observer);
+            Debug.Log($"DifficultyManager: Observer {observer} registered.");
+        }
+    }
+
+    public void DeregisterObserver(IDifficultyObserver observer)
+    {
+        if (observers.Contains(observer))
+        {
+            observers.Remove(observer);
+            Debug.Log($"DifficultyManager: Observer {observer} deregistered.");
+        }
+    }
+
+    public void ResetDifficulty()
     {
         currentLevel = 1;
-        scorePerLevel = 10;
-        currentSpawnRate = initialSpawnRate; // Reset dello spawn rate al valore iniziale
-        currentObstacleSpeed = ObstacleType1.GetBaseSpeed(); // Reset della velocità degli ostacoli al valore base
-        OnLevelChanged?.Invoke(currentLevel);
-        Debug.Log($"Difficulty started. Level: {currentLevel}, Spawn Rate: {currentSpawnRate}, Speed: {currentObstacleSpeed}");
+        currentSpawnRate = initialSpawnRate;
+        CurrentObstacleSpeed = GetBaseSpeed();
+        NotifyObservers();
+        Debug.Log("DifficultyManager: Difficulty reset.");
     }
 
     public void CheckLevelProgression(int score)
@@ -41,62 +71,65 @@ public class DifficultyManager : MonoBehaviour
         if (score >= scorePerLevel * currentLevel)
         {
             IncreaseLevel();
+            Debug.Log($"DifficultyManager: Level progression checked. Score: {score}");
         }
     }
 
     private void IncreaseLevel()
     {
         currentLevel++;
-        OnLevelChanged?.Invoke(currentLevel);
-        Debug.Log($"Level increased to: {currentLevel}");
+        Debug.Log($"DifficultyManager: Level increased to {currentLevel}.");
 
         if (currentLevel % 5 == 0)
         {
             UpdateDifficulty();
         }
+        NotifyObservers();
     }
 
     private void UpdateDifficulty()
     {
-        // Calcola il numero di volte che il decremento di spawn rate deve essere applicato.
-        // Questo dovrebbe essere 0 fino al livello 4 e poi aumentare di 1 ogni 5 livelli.
-        int levelFactor = Mathf.Max(0, (currentLevel - 1) / 5);
+        currentSpawnRate = Mathf.Max(minimumSpawnRate, initialSpawnRate - spawnRateDecrement * (currentLevel / 5));
+        CurrentObstacleSpeed = Mathf.Min(maximumObstacleSpeed, GetBaseSpeed() + obstacleSpeedIncrement * (currentLevel / 5));
+        NotifyObservers();
+        Debug.Log($"DifficultyManager: Difficulty updated. Spawn Rate: {currentSpawnRate}, Obstacle Speed: {CurrentObstacleSpeed}");
+    }
 
-        // Applica il decremento di spawn rate basato su levelFactor.
-        currentSpawnRate = Mathf.Max(minimumSpawnRate, initialSpawnRate - (spawnRateDecrement * levelFactor));
+    private float GetBaseSpeed()
+    {
+        return 100.0f;
+    }
 
-        // Applica l'incremento della velocità degli ostacoli se il livello è un multiplo di 5.
-        if (currentLevel % 5 == 0)
+    private void NotifyObservers()
+    {
+        foreach (var observer in observers)
         {
-            currentObstacleSpeed = Mathf.Min(maximumObstacleSpeed, currentObstacleSpeed + obstacleSpeedIncrement);
+            observer.OnDifficultyChanged(currentSpawnRate, CurrentObstacleSpeed, currentLevel);
+            Debug.Log($"DifficultyManager: Notifying observer {observer} of difficulty change.");
         }
-
-        // Assicurati che l'evento venga invocato con la velocità aggiornata.
-        OnSpeedUpdate?.Invoke(currentObstacleSpeed);
-
-        // Aggiorna le componenti del gioco con i nuovi valori.
-        GameController.Instance.UpdateObstacleDifficulty(currentSpawnRate, currentObstacleSpeed);
-
-        // Log per il debug.
-        Debug.Log($"[DifficultyManager] Difficulty updated - Level: {currentLevel}, New spawn rate: {currentSpawnRate}, New obstacle speed: {currentObstacleSpeed}");
-    }
-    public void RegisterObstacle(ObstacleType1 obstacle)
-    {
-        OnSpeedUpdate += obstacle.UpdateSpeed;
     }
 
-    public void DeregisterObstacle(ObstacleType1 obstacle)
+    public float GetCurrentSpawnRate()
     {
-        OnSpeedUpdate -= obstacle.UpdateSpeed;
-    }
-
-    public float GetCurrentObstacleSpeed()
-    {
-        return currentObstacleSpeed;
+        return currentSpawnRate;
     }
 
     public int GetCurrentLevel()
     {
         return currentLevel;
+    }
+
+    // Metodo pubblico per iniziare il processo di reset
+    public void Reset()
+    {
+        StartCoroutine(ResetAfterDelay(2f));
+    }
+
+    // Coroutine per gestire il reset con ritardo
+    private IEnumerator ResetAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ResetDifficulty();
+        Debug.Log("DifficultyManager: Reset completed after delay.");
     }
 }

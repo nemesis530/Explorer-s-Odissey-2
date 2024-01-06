@@ -1,13 +1,15 @@
-// ScoreTrigger.cs
 using UnityEngine;
 
 public class ScoreTrigger : MonoBehaviour
 {
+    public GameController gameController;
+
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && gameController != null && gameController.IsGameStarted())
         {
-            GameController.Instance.scoreManager.AddScore(1); // Aggiunge un punto al punteggio
+            // Aggiunge un punto al punteggio solo se il gioco è iniziato
+            gameController.scoreManager.AddScore(1);
         }
     }
 }

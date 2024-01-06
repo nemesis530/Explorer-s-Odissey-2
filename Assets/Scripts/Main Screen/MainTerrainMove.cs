@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class MainTerrainMove : MonoBehaviour
 {
-    public float scrollSpeed = 0.5f; // Velocità di scrolling modificabile dall'editor
-    public float tileSizeZ = 2211.75f; // Lunghezza effettiva del terreno in unità Unity aggiornata
+    public float scrollSpeed = 500f; // Velocità di scrolling modificabile dall'editor
+    public float tileSizeZ = 4120f; // Lunghezza effettiva del terreno in unità Unity aggiornata
 
     private Vector3 startPosition;
     private float scrollPosition = 0f; // Posizione di scroll corrente

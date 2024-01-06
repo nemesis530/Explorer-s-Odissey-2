@@ -1,71 +1,160 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using System.Collections;
 
-public class GameController : MonoBehaviour
+public class GameController : MonoBehaviour, IDifficultyObserver
 {
-    public static GameController Instance { get; private set; }
     public DifficultyManager difficultyManager;
     public ScoreManager scoreManager;
     public ObstacleSpawnerController obstacleSpawner;
-    public GameObject startGameText;
+    public GameObject player;
+    public TerrainMove terrainMove;
+    public SurvTimeController survTimeController;
+    public DisplayController displayController;
 
     private bool gameStarted = false;
+    private bool isRestarting = false;
+    private float startTime;
 
-    private void Awake()
+    private void Start()
     {
-        if (Instance == null)
+        Debug.Log("GameController: Start called.");
+
+        if (difficultyManager != null)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            Debug.Log("GameController instance created");
+            difficultyManager.RegisterObserver(this);
+            Debug.Log("GameController: Registered with DifficultyManager.");
         }
         else
         {
-            Destroy(gameObject);
-            Debug.Log("Duplicate GameController instance destroyed");
+            Debug.LogWarning("GameController: DifficultyManager not found.");
         }
     }
 
     private void Update()
     {
-        if (!gameStarted && Input.GetMouseButtonDown(0))
+        if (!gameStarted && !isRestarting && PlayerInputReceived())
         {
+            Debug.Log("GameController: Player input received, starting game.");
             StartGame();
-            Debug.Log("Mouse button pressed - Starting game");
         }
+    }
+
+    private bool PlayerInputReceived()
+    {
+        return Input.GetMouseButtonDown(0);
     }
 
     public void StartGame()
     {
-        if (gameStarted)
+        gameStarted = true;
+        startTime = Time.time;
+
+        if (obstacleSpawner != null)
         {
-            Debug.LogWarning("Game already started");
-            return;
+            obstacleSpawner.StartSpawning();
+            Debug.Log("GameController: Obstacle spawning started.");
+        }
+        else
+        {
+            Debug.LogWarning("GameController: ObstacleSpawner not found.");
         }
 
-        gameStarted = true;
-        startGameText?.SetActive(false); // Nascondi il testo di inizio gioco se presente
+        difficultyManager.ResetDifficulty();
+        scoreManager.ResetScore();
 
-        // Avvia i vari componenti del gioco, controllando che non siano nulli
-        obstacleSpawner?.StartSpawning();
-        difficultyManager?.StartDifficulty();
-        scoreManager?.ResetScore();
+        if (terrainMove != null)
+        {
+            terrainMove.enabled = true;
+            Debug.Log("GameController: Terrain movement enabled.");
+        }
+        else
+        {
+            Debug.LogWarning("GameController: TerrainMove not found.");
+        }
 
-        Debug.Log("Gameplay elements initialized and game started");
+        Debug.Log("GameController: Game started.");
     }
 
     public void EndGame()
     {
-        obstacleSpawner?.StopSpawning();
-        scoreManager?.SaveScore();
-        SceneManager.LoadScene("GameOverScene"); // Assicurati di avere una scena di GameOver
-        Debug.Log("Game ended, loading Game Over scene");
+        Debug.Log("GameController: Ending game.");
+        StartCoroutine(ResetGameStartedAfterDelay(3f));
+
+        obstacleSpawner.StopSpawning();
+        Debug.Log("GameController: Obstacle spawning stopped.");
+
+        if (terrainMove != null)
+        {
+            terrainMove.enabled = false;
+            Debug.Log("GameController: Terrain movement disabled.");
+        }
+
+        float survivalTime = Time.time - startTime;
+        DataManager.Instance.CheckAndUpdateMaxSurvivalTime(survivalTime);
+        DataManager.Instance.SetCurrentSurvivalTime(survivalTime);
+
+        // Finalizza il punteggio, aggiorna il punteggio massimo e salva i dati
+        scoreManager.FinalizeScore();
+        Debug.Log($"GameController: Score saved to DataManager: {scoreManager.Score}");
+
+        Debug.Log("GameController: Game ended.");
     }
 
-    public void UpdateObstacleDifficulty(float newSpawnRate, float newObstacleSpeed)
+
+    private IEnumerator ResetGameStartedAfterDelay(float delay)
     {
-        obstacleSpawner?.UpdateDifficulty(newSpawnRate, newObstacleSpeed);
-        Debug.Log($"Obstacle difficulty updated: Spawn Rate = {newSpawnRate}, Speed = {newObstacleSpeed}");
+        yield return new WaitForSeconds(delay);
+        gameStarted = false;
+        Debug.Log("GameController: gameStarted reset to false.");
+    }
+
+    public void NotifyGameOver()
+    {
+        Debug.Log("GameController: Game over notified.");
+        EndGame();
+        ResetGameComponents();
+        isRestarting = true;
+    }
+
+    private void ResetGameComponents()
+    {
+        Debug.Log("GameController: Resetting game components.");
+
+        if (obstacleSpawner != null)
+        {
+            obstacleSpawner.Reset();
+            Debug.Log("GameController: ObstacleSpawnerController reset.");
+        }
+
+        if (survTimeController != null)
+        {
+            survTimeController.Reset();
+            Debug.Log("GameController: SurvTimeController reset.");
+        }
+
+        DifficultyManager.Instance.Reset();
+        Debug.Log("GameController: DifficultyManager reset.");
+
+        ScoreManager.Instance.Reset();
+        Debug.Log("GameController: ScoreManager reset.");
+
+        if (displayController != null)
+        {
+            displayController.Reset();
+            Debug.Log("GameController: DisplayController reset.");
+        }
+
+        Obstacle obstacleInstance = FindObjectOfType<Obstacle>();
+        if (obstacleInstance != null)
+        {
+            obstacleInstance.ResetAll();
+            Debug.Log("GameController: Obstacle reset.");
+        }
+    }
+
+    public void OnDifficultyChanged(float newSpawnRate, float newObstacleSpeed, int newLevel)
+    {
+        Debug.Log($"GameController: Difficulty updated - Spawn Rate: {newSpawnRate}, Speed: {newObstacleSpeed}, Level: {newLevel}.");
     }
 
     public bool IsGameStarted()
@@ -73,5 +162,8 @@ public class GameController : MonoBehaviour
         return gameStarted;
     }
 
-    // Altri metodi se necessari...
+    public float GetSurvivalTime()
+    {
+        return gameStarted ? Time.time - startTime : 0f;
+    }
 }
