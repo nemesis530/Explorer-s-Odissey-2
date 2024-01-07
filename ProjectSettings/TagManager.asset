@@ -15,6 +15,7 @@ TagManager:
   - ObstacleController
   - DataManager
   - HighScoreText
+  - CameraBounds
   layers:
   - Default
   - TransparentFX

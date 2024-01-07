@@ -536,7 +536,6 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
-  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -618,51 +617,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &519420033
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0.62042236, y: 0.018371582}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1841.4188, y: 1036.3798}
-  m_EdgeRadius: 0
 --- !u!1 &599397118
 GameObject:
   m_ObjectHideFlags: 0
@@ -900,9 +854,9 @@ Transform:
   m_GameObject: {fileID: 747266231}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 286, y: 570, z: 0}
-  m_LocalScale: {x: 73.34621, y: 71.09757, z: 143.94408}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 456, y: 508, z: 0}
+  m_LocalScale: {x: 61.619995, y: 59.730858, z: 120.93104}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1984537936}
   m_Father: {fileID: 0}
@@ -919,7 +873,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 798b9ee79a9cfee4b8d4086b7a135d90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialMoveSpeed: 90
+  initialMoveSpeed: 100
+  maxSpeed: 400
   gameController: {fileID: 841592608076912415}
 --- !u!50 &747266235
 Rigidbody2D:
@@ -957,7 +912,7 @@ CircleCollider2D:
   m_GameObject: {fileID: 747266231}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: b930af787b37edb428a5fe43d9877357, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -980,9 +935,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.09}
   serializedVersion: 2
-  m_Radius: 0.69
+  m_Radius: 0.6
 --- !u!114 &747266238
 MonoBehaviour:
   m_ObjectHideFlags: 0
