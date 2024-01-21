@@ -33,11 +33,11 @@ public class GameOverController : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
-        SceneManager.LoadScene("MainGameScene");
+        SceneController.Instance.LoadScene("MainGameScene");
     }
 
     public void RestartGame()
     {
-        SceneManager.LoadScene("GamePlayScene");
+        SceneController.Instance.LoadScene("GamePlayScene");
     }
 }

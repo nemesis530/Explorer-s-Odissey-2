@@ -86,7 +86,7 @@ public class PlayerCollision : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
-        Debug.Log("Loading Game Over Scene.");
-        SceneManager.LoadScene(gameOverSceneName);
+        Debug.Log("Loading Game Over Scene using SceneController.");
+        SceneController.Instance.LoadScene(gameOverSceneName);
     }
 }

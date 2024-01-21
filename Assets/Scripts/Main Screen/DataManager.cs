@@ -9,6 +9,8 @@ public class SaveData
     public float masterVolume;
     public float maxSurvivalTime;
     public int score; // Aggiunta per salvare il punteggio corrente
+    public int selectedJingleIndex; // Aggiunto per salvare l'indice della sigla selezionata
+
 }
 
 public class DataManager : MonoBehaviour
@@ -22,6 +24,8 @@ public class DataManager : MonoBehaviour
     public int Score { get; private set; } // Proprietà per il punteggio corrente
 
     private string saveFilePath;
+    public int SelectedJingleIndex { get; private set; } // Proprietà per l'indice della sigla
+
 
     private void Awake()
     {
@@ -53,7 +57,9 @@ public class DataManager : MonoBehaviour
             highScore = HighScore,
             masterVolume = MasterVolume,
             maxSurvivalTime = MaxSurvivalTime,
-            score = Score // Salvataggio del punteggio corrente
+            score = Score, // Salvataggio del punteggio corrente
+            selectedJingleIndex = SelectedJingleIndex
+
         };
 
         string json = JsonUtility.ToJson(data);
@@ -72,6 +78,7 @@ public class DataManager : MonoBehaviour
             MasterVolume = data.masterVolume;
             MaxSurvivalTime = data.maxSurvivalTime;
             Score = data.score; // Caricamento del punteggio corrente
+            SelectedJingleIndex = data.selectedJingleIndex; // Carica l'indice della sigla
             Debug.Log("Data loaded");
         }
         else
@@ -80,8 +87,15 @@ public class DataManager : MonoBehaviour
             MasterVolume = 1.0f;
             MaxSurvivalTime = 0f;
             Score = 0; // Impostazione del punteggio corrente a 0 se non esiste un file di salvataggio
+            SelectedJingleIndex = 0; // Imposta un valore predefinito per l'indice della sigla
             Debug.Log("No save file found, default values assigned");
         }
+    }
+    public void SetSelectedJingleIndex(int index)
+    {
+        SelectedJingleIndex = index;
+        SaveData();
+        Debug.Log($"Selected jingle index updated to {SelectedJingleIndex}");
     }
 
     public void SetHighScore(int highScore)
