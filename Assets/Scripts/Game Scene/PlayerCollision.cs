@@ -18,7 +18,11 @@ public class PlayerCollision : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collisionOccurred) return; // Evita collisioni multiple
+        // Verifica se il player ha colpito un bordo e interrompi l'esecuzione del metodo se è così
+        if (collision.gameObject.CompareTag("Borders")) return;
+
+        // Se la collisione non è con i bordi, e il flag collisionOccurred è già vero, interrompi l'esecuzione del metodo
+        if (collisionOccurred) return;
 
         Debug.Log("Collision detected with: " + collision.gameObject.name);
         collisionOccurred = true;
@@ -64,7 +68,6 @@ public class PlayerCollision : MonoBehaviour
 
         StartCoroutine(HandleAnimationEnd());
     }
-
     IEnumerator HandleAnimationEnd()
     {
         Animator explosionAnimator = explosionObject.GetComponent<Animator>();
@@ -86,7 +89,7 @@ public class PlayerCollision : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
-        Debug.Log("Loading Game Over Scene.");
-        SceneManager.LoadScene(gameOverSceneName);
+        Debug.Log("Loading Game Over Scene using SceneController.");
+        SceneController.Instance.LoadScene(gameOverSceneName);
     }
 }

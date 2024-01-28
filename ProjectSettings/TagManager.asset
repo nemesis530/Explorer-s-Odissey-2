@@ -9,13 +9,15 @@ TagManager:
   - Timetext
   - LoadingController
   - Explosion
-  - Start Button
   - DifficultyManager
   - Level
   - ObstacleController
   - DataManager
   - HighScoreText
   - CameraBounds
+  - JingleManager
+  - StartButton
+  - Borders
   layers:
   - Default
   - TransparentFX

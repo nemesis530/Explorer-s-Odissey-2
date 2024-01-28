@@ -1,7 +1,9 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro; // Importazione per TextMeshPro
 
 public class MainSceneController : MonoBehaviour
 {
@@ -14,74 +16,80 @@ public class MainSceneController : MonoBehaviour
     private GameObject settingsPanel;
     [SerializeField]
     private GameObject creditsPanel;
-    [SerializeField] private GameObject BackgroundOverlay; // Aggiungi questo
-
+    [SerializeField]
+    private GameObject BackgroundOverlay;
 
     [Header("Settings UI")]
     [SerializeField]
-    private Slider volumeSlider;
+    private Slider jingleVolumeSlider; // Slider per il volume della sigla
+    [SerializeField]
+    private Slider effectsVolumeSlider; // Slider per il volume degli effetti
+    [SerializeField]
+    private TMP_Dropdown jingleDropdown;
+    [SerializeField]
+    private AudioSource jingleAudioSource; // AudioSource per la sigla
 
     private void Start()
     {
-        // Carica il volume salvato dal DataManager all'avvio
         LoadVolumeSettings();
+        InitializeJingleDropdown();
+    }
+
+    private void InitializeJingleDropdown()
+    {
+        jingleDropdown.ClearOptions();
+        jingleDropdown.AddOptions(new List<string> { "Sigla 1", "Sigla 2", "Sigla 3" });
+        jingleDropdown.value = DataManager.Instance.SelectedJingleIndex;
+        jingleDropdown.onValueChanged.AddListener(OnJingleSelectionChanged);
     }
 
     public void OnStartGameButtonClick()
     {
-        // Avvia la coroutine per iniziare il gioco dopo un ritardo
-        StartCoroutine(StartGameAfterDelay());
+        StartCoroutine(StartGameWithController());
     }
 
-    private IEnumerator StartGameAfterDelay()
+    private IEnumerator StartGameWithController()
     {
-        // Attendi 1 secondo prima di caricare la scena di gioco
         yield return new WaitForSeconds(1f);
-        SceneManager.LoadScene(gamePlaySceneName);
+        SceneController.Instance.LoadScene(gamePlaySceneName);
     }
 
     public void OnSettingsButtonClick()
     {
-        // Mostra il pannello delle impostazioni
         settingsPanel.SetActive(true);
     }
 
     public void OnSaveSettingsButtonClick()
     {
-        // Salva le impostazioni del volume e nasconde il pannello
-        DataManager.Instance.SetMasterVolume(volumeSlider.value);
+        DataManager.Instance.SetMasterVolume(jingleVolumeSlider.value);
+        DataManager.Instance.SetSelectedJingleIndex(jingleDropdown.value);
         DataManager.Instance.SaveData();
         settingsPanel.SetActive(false);
     }
 
     public void OnExitSettingsButtonClick()
     {
-        // Nasconde il pannello delle impostazioni senza salvare
         settingsPanel.SetActive(false);
     }
 
-    // Questo metodo viene chiamato quando il button dei Crediti è premuto
     public void OnCreditsButtonClick()
     {
-        creditsPanel.SetActive(true); // Attiva il pannello dei Crediti
-        BackgroundOverlay.SetActive(true); // Attiva l'overlay di sfondo
+        creditsPanel.SetActive(true);
+        BackgroundOverlay.SetActive(true);
     }
+
     public void ResetHighScores()
     {
-        // Resetta i punteggi alti in DataManager
         DataManager.Instance.ResetHighScores();
     }
 
     public void OnCloseCreditsButtonClick()
     {
-        // Nasconde il pannello dei credits
         creditsPanel.SetActive(false);
     }
 
-    // Questo metodo viene chiamato quando si clicca sul background overlay
     public void OnBackgroundClick()
     {
-        // Chiudi tutti i pannelli e l'overlay di sfondo
         if (creditsPanel.activeSelf)
         {
             creditsPanel.SetActive(false);
@@ -90,17 +98,32 @@ public class MainSceneController : MonoBehaviour
         {
             settingsPanel.SetActive(false);
         }
-
-        // Disattiva sempre l'overlay di sfondo indipendentemente dal pannello che era aperto
         BackgroundOverlay.SetActive(false);
+    }
+
+    public void OnJingleSelectionChanged(int selectedIndex)
+    {
+        DataManager.Instance.SetSelectedJingleIndex(selectedIndex);
+        JingleManager.Instance.PlayJingle(selectedIndex);
+    }
+
+    public void OnJingleVolumeChanged()
+    {
+        jingleAudioSource.volume = jingleVolumeSlider.value;
+    }
+
+    public void OnEffectsVolumeChanged()
+    {
+        // Qui dovrai implementare la logica per cambiare il volume degli effetti sonori
+        // Dipende da come gestisci gli effetti sonori nel tuo gioco
     }
 
     private void LoadVolumeSettings()
     {
-        // Carica il volume salvato e aggiorna lo slider e il volume del gioco
         float savedVolume = DataManager.Instance.MasterVolume;
-        volumeSlider.value = savedVolume;
-        AudioListener.volume = savedVolume;
+        jingleVolumeSlider.value = savedVolume;
+        jingleAudioSource.volume = savedVolume;
+        // Assicurati di aggiornare anche il volume degli effetti, se necessario
     }
 
     // Altri metodi e logica...
